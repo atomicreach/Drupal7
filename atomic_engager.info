@@ -1,5 +1,6 @@
 name = Atomic Engager
 description = Optimizing content for your target audience has never been easier.
 core = 7.x
-version = "7.x-2.0.03"
+version = "7.x-2.0.00"
 configure = admin/config/content/atomicengager
+scripts[] = inc/js/wysiwyg-atomicreach.js
