@@ -3,9 +3,61 @@
         attach: function(context, settings) {
             $(document).ajaxComplete(function(e, xhr, settings) {
 
+      /********************************/
+        /**** Score Button & new-meta.php Tabs ui ****/
+        /********************************/
+      //  $("#edit-arpost").bind("load", "ul.AR-tabs", ARTabs());
+      ARTabs();
+        function ARTabs() {
+            $('ul.AR-tabs').each(function () {
+                // For each set of tabs, we want to keep track of
+                // which tab is active and it's associated content
+                var $active, $content, $links = $(this).find('a');
+
+                // If the location.hash matches one of the links, use that as the active tab.
+                // If no match is found, use the first link as the initial active tab.
+                $active = $($links.filter('[href="' + location.hash + '"]')[0] || $links[0]);
+                $active.addClass('active');
+                $content = $($active[0].hash);
+
+                // Hide the remaining content
+                $links.not($active).each(function () {
+                    $(this.hash).hide();
+                });
+
+                // Bind the click event handler
+                // delegatge is supported by jQuery 1.4
+                $(this).delegate('a', 'click', function (e) {
+                    // Make the old tab inactive.
+                    $active.removeClass('active');
+                    $content.hide();
+
+                    // Update the variables with the new link and content
+                    $active = $(this);
+                    $content = $(this.hash);
+
+                    // Make the tab active.
+                    $active.addClass('active');
+                    $content.show();
+
+                    // Prevent the anchor's default click action
+                    e.preventDefault();
+                });
+            });
+        }
+    
+ 
+
+
+
 // Spelling Mistakes    
-                aSm = $("ul.spelling-mistakes li").find('span.smText').clone().not(":last").append("\\b|\\b").end().text();
-                var regexSm = new RegExp('(?:\\b|_)(' + aSm + ')(?:\\b|_)', 'ig');
+                //aSm = $("ul.spelling-mistakes li").find('span.smText').clone().not(":last").append("\\b|\\b").end().text();
+                //var regexSm = new RegExp('(?:\\b|_)(' + aSm + ')(?:\\b|_)', 'ig');
+                 var words = $.map(SMwords, function(word, i) { return word.replace(/[\-\[\]\/\{\}\(\)\*\+\?\.\\\^\$\|]/g, "\\$&"); });
+          //var regexSm = new RegExp('(\\b[\\W]*'+words.join("[\\W]*\\b|\\b[\\W]*")+'[\\W]*\\b)','ig');
+          var regexSm = new RegExp('(\\b'+words.join("?[\\x27]?[\\S]+\\b|\\b")+'?[\\x27]?[\\S]+\\b)','ig');
+//          console.log("smword: "+SMwords);
+//          console.log("regexSM: "+regexSm);
 
 //console.log(regexSm);
 
@@ -61,9 +113,10 @@
 
 
                 // Grammar Mistakes    
-                aGm = $("ul.grammar-mistakes li").find('span.gmText').clone().not(":last").append("|").end().text();
-                var regexGm = new RegExp(aGm, 'gi');
-
+//                aGm = $("ul.grammar-mistakes li").find('span.gmText').clone().not(":last").append("|").end().text();
+//                var regexGm = new RegExp(aGm, 'g');
+            var words = $.map(GMwords, function(word, i) { return word.replace(/[\-\[\]\/\{\}\(\)\*\+\?\.\\\^\$\|]/g, "\\$&"); });          
+            var regexGm = new RegExp('(\\b'+words.join("?[\\x27]?[\\S]+\\b|\\b")+'?[\\x27]?[\\S]+\\b)','g');
                 $("#highlight-gm").toggle(function() {
                     $('.form-textarea-wrapper iframe').contents().highlightRegex(regexGm, {
                         tagType: 'span',
@@ -155,6 +208,31 @@
 
                     }
                 });
+                
+                /*--------Paragraph Density--------------*/
+    $("#chkpwd").change(function () {
+        perParagraphHighlight(this, 'TOOSHORT', 'TOOLONG', PWDtooShortColor, PWDtooLongColor, PWDdomExpression, PWDparagraphs, 'pwd');
+    });
+
+    function perParagraphHighlight(element, stateA, stateB, colorA, colorB, domExpression, dataToHighlight, dimension)
+    {
+        if($(element).is(":checked")) {
+            stateLabelA = stateA.toLowerCase().replace(' ', '-');
+            stateLabelB = stateB.toLowerCase().replace(' ', '-');
+            text_paragraphs = $('.form-textarea-wrapper iframe').contents().find(domExpression);
+            $.each(dataToHighlight, function(index, value) {
+                if (value == 'HIT' || value == 'UNAVAILABLE' || value == '' || value == 'length_hit')
+                    return;
+                type = (value == stateLabelA)?stateLabelA:stateLabelB;
+                $(text_paragraphs[index]).wrapInner("<span class='highlight-"+dimension+" "+type+"'></span>");
+            });
+            $('.form-textarea-wrapper iframe').contents().find("."+stateLabelA).css("background", colorA);
+            $('.form-textarea-wrapper iframe').contents().find("."+stateLabelB).css("background", colorB);
+        }else{
+            $('.form-textarea-wrapper iframe').contents().find(".highlight-"+dimension).contents().unwrap();
+        }
+    };
+
 
                 // clear highlight before submiting form, this way will clean the html added to the iframe
                 $('.node-form').submit(function( event ) {
@@ -190,4 +268,29 @@
             }
         }
     };
+    
+    /*
+$('#chkpwd').change(function() {
+   if($(this).is(':checked')) {
+$( "#arTabContent > div" ).find( "label[for=chkpwd]" ).addClass('checked-label');
+   }
+});
+$('label[for=chkso]').click(function() {
+   if($(this).is(':checked')) {
+$( "#arTabContent > div" ).find( "label[for=chkso]" ).addClass('checked-label');
+   }
+});
+$('label[for=chksp]').click(function() {
+   if($(this).is(':checked')) {
+$( "#arTabContent > div" ).find( "label[for=chksp]" ).addClass('checked-label');
+   }
+});
+$('label[for=chkgm]').click(function() {
+   if($(this).is(':checked')) {
+$( "#arTabContent > div" ).find( "label[for=chkgm]" ).addClass('checked-label');
+   }
+});
+
+*/
+
 })(jQuery);

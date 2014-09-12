@@ -2,8 +2,6 @@ jQuery(document).ready(function($) {
     // Sort result(Red first, Green last)
 //    $('div.ac-container div').tsort({attr:'class'});
     
-    
- 
    // Spelling Mistakes    
    aSm = $("ul.spelling-mistakes li").find('span.smText').clone().not(":last").append("\\b|\\b").end().text();
    var regexSm = new RegExp('(?:\\b|_)(' + aSm + ')(?:\\b|_)','ig');
@@ -217,4 +215,8 @@ jQuery(document).ready(function($) {
        return true;
    });    
     
+    
+   
+
+
 });

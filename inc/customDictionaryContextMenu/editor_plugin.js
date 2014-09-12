@@ -9,7 +9,6 @@
  */
 
 (function() {
-    console.log ("Hassan 0");
 	var Event = tinymce.dom.Event, each = tinymce.each, DOM = tinymce.DOM;
 
 	/**
@@ -28,7 +27,6 @@
 		 * @param {string} url Absolute URL to where the plugin is located.
 		 */
 		init : function(ed) {
-                    console.log ("Hassan In");
 			var t = this, showMenu, contextmenuNeverUseNative, realCtrlKey, hideMenu;
 
 			t.editor = ed;

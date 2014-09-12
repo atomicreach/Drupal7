@@ -11,10 +11,11 @@
 class meta {
 
     private $result;
-
+    private $targetAud;
     // Contructor getting result from ARClient.php in a form of an object.
-    Public function __construct($obj) {
+    Public function __construct($obj, $targetAud) {
         $this->result = $obj;
+        $this->targetAud = $targetAud;
     }
 
     /*     * *************************** */
@@ -22,6 +23,75 @@ class meta {
     /* find out more about this:   */
     /* http://www.slideshare.net/atomicreach/how-to-achieve-a-content-sophistication-match-for-your-audience */
     /*     * *************************** */
+
+    /*     * **   SUMMARY TAB    *** */
+
+    public function summaryTab() {
+        $out = '<h3>TOP 3 OPPORTUNITIES</h3>
+					<ul class="threeOpp ar_spritelist">';
+
+        $stopAtThree = 0;
+        $measState = $this->result->data->analysis;
+
+
+        // 1 check audience match
+        if ($measState->so->state !== 'green' && $stopAtThree != 3) {
+            $out .= '<li class="ar_checkmarks_' . (($measState->so->state === "yellow") ? 'warning' : 'error') . '">
+								Your post is not an audience match. Hit AUDIENCE to find out why.</li>';
+            $stopAtThree++;
+        }
+        // 2 check if title is not green.
+        if ($measState->tm->state !== 'green' && $stopAtThree != 3) {
+            $out .= '<li class="ar_checkmarks_' . (($measState->tm->state === "yellow") ? 'warning' : 'error') . '">
+								Your title needs work. Hit TITLE to find out why.</li>';
+            $stopAtThree++;
+        }
+        // 3 check length
+        if ($measState->ln->state !== 'green' && $stopAtThree != 3) {
+            $out .= '<li class="ar_checkmarks_' . (($measState->ln->state === "yellow") ? 'warning' : 'error') . '">
+								  Length of post is not optimal. Hit STRUCTURE to find out why.</li>';
+            $stopAtThree++;
+        }
+        // 4 Check Grammar
+        if ($measState->gm->state !== 'green' && $stopAtThree != 3) {
+            $out .= '<li class="ar_checkmarks_' . (($measState->gm->state === "yellow") ? 'warning' : 'error') . '">
+								Improve your grammar. Hit LINGUISTICS to find out how.</li>';
+            $stopAtThree++;
+        }
+        // 4.5 Check Paragraph Word Density
+        if ($measState->pwd->state !== 'green' && $stopAtThree != 3) {
+            $out .= '<li class="ar_checkmarks_' . (($measState->pwd->state === "yellow") ? 'warning' : 'error') . '">
+								Some of your paragraphs are too long for your target audience. Hit STRUCTURE to find out how.</li>';
+            $stopAtThree++;
+        }
+        // 5 check if emotion is not green
+        if ($measState->em->state !== 'green' && $stopAtThree != 3) {
+            $out .= '<li class="ar_checkmarks_' . (($measState->em->state === "yellow") ? 'warning' : 'error') . '">
+								Your post lacks emotion. Hit AUDIENCE to fix it.</li>';
+            $stopAtThree++;
+        }
+        // 6 Check Spelling
+        if ($measState->sm->state !== 'green' && $stopAtThree != 3) {
+            $out .= '<li class="ar_checkmarks_' . (($measState->sm->state === "yellow") ? 'warning' : 'error') . '">
+								Incorrect spelling detected. Hit LINGUISTICS to find out why.</li>';
+            $stopAtThree++;
+        }
+        // 7 Links
+        if ($measState->lc->state !== 'green' && $stopAtThree != 3) {
+            $out .= '<li class="ar_checkmarks_' . (($measState->lc->state === "yellow") ? 'warning' : 'error') . '">
+								Some links aren\'t working. Hit LINGUISTICS to find out more.</li>';
+            $stopAtThree++;
+        }
+        // 8 Check Topics
+        /* if($measState->tpp->state !== 'green' && $stopAtThree != 3){
+          echo '';
+          $stopAtThree ++;
+          } */
+
+        $out .= '</ul>';
+
+        return $out;
+    }
 
     public function contentSophistication() {
         $num = 0;
@@ -35,13 +105,11 @@ class meta {
 
         if (!empty($so->paragraphs)) {
             if ($so->detail === 'TOO SIMPLE') {
-                $ar_message = '<p><strong>TIPS:</strong> consider elaborating on short sentences and/ or use more sophisticated language.</p>';
+                $ar_message = 'Your article is too simple for your audience. To get the most of your content, 85% of your paragraphs need to be a match. Consider revising some of your highlighted paragraphs by writing longer sentences and using sophisticated language.';
             } elseif ($so->detail === 'TOO COMPLEX') {
-                $ar_message = '<p><strong>TIPS:</strong> Write shorter sentences, use shorter words, break up paragraphs.</p>';
+                $ar_message = 'Your article is too complex for your audience. To get the most of your content, 85% of your paragraphs need to be a match. Consider revising some of your highlighted paragraphs by writing shorter sentences and simplifying your language.';
             }
-            $ar_message .= '<p><br />Utilize the article highlighting (<strong>Audience Mismatch</strong>) button above to see where you should modify your content to match your audience. <br /> <span style="color: #91c7f9;">Blue highlights = Too simple.</span> <span style="color: #FFA20C;">Orange highlights = Too complex.</span>
-                                     <br />
-                                    <a href="https://www.slideshare.net/secret/ydYaIIq7pSJDxK" target="_blank" class="toggle-link ar-message-link">Refer to our tips on how to achieve a content sophistication match for your audience <span>here</span></a>.</p>';
+            $ar_message .= '<p><a class="toggle-link ar-message-link" target="_blank" href="http://hub.atomicreach.com/i/303975/">Refer to our tips on how to achieve a content sophistication match for your audience <span>here</span></a>.</p>';
             $out .= $ar_message . PHP_EOL;
         }
 //    $out .= '</ul>';
@@ -104,6 +172,36 @@ class meta {
         return $out;
     }
 
+    /*     * *************************  */
+    /*     Paragraph Density           */
+    /*     * ******************************* */
+
+    public function paragraphDensity() {
+        $pwd = $this->result->data->analysis->pwd;
+
+        // states: passed (green) - warning (yellow) - error (red)
+        $ms = 100 - $pwd->measured->percentageParagraphsIdealWordCountMetadata;
+        //$pwdMin = $pwd->recommended->paragraphWordDensityMin;
+        $pwdMax = $pwd->recommended->paragraphWordDensityMax;
+        // $state = arnanlyzer_rsl_state($ms, $rs);
+        $state = strtolower($pwd->state);
+
+        $out = '<div class="' . $this->DOMsort($state) . '">' . PHP_EOL;
+        $out .= '<input id="pwd" name="pwd" type="checkbox" />' . PHP_EOL;
+        $out .= '<label for="pwd"  id="ar-' . $state . '">Paragraph Density</label>' . PHP_EOL;
+        $out .= '<article class="ac-small">' . PHP_EOL;
+        $out .= '<p class="ar-analysis-' . $state . '">';
+        if ($state == 'green') {
+            $out .= '<div>Your paragraphs are an ideal length for your target audience.</div>';
+        } else {
+            $out .= '<div>' . $ms . '% of your paragraphs are too long for your target audience. Write paragraphs with no greater than ' . $pwdMax . ' words.</div>';
+        }
+        $out .= '</p>' . PHP_EOL;
+        $out .= '</article>' . PHP_EOL;
+        $out .= '</div>' . PHP_EOL;
+        return $out;
+    }
+
     /*     * ************************ */
     /*   Content Originality    */
     /*     * ************************ */
@@ -148,6 +246,7 @@ class meta {
         foreach ($em->dimensions as $key => $value) {
             $out .= '<li class="emotion-' . strtolower($value->state) . '"><strong>' . $value->name . '</strong>: ' . $value->detail . '</li>';
         }
+        $out .= '<p>Refer to our tips on how to write with emotion <a class="toggle-link ar-message-link" target="_blank" href="http://hub.atomicreach.com/i/303948/"><span>here</span></a>.</p>';
         $out .= '</ul>';
 
 
@@ -170,8 +269,9 @@ class meta {
         $out .= '<p class="ar-analysis-' . $sm->state . '">There ';
         $out .= ($sm->total == 1) ? 'is ' : 'are ';
         $out .= $sm->total . ' misspelled word(s).</p>' . PHP_EOL;
-        if (is_array($sm->detail)) {
+        if (count($sm->detail) > 0) {
             $out .= '<ul class="spelling-mistakes">';
+            $out .= '<p>Hit the Spelling Mistakes button above to highlight these words in your article. Fix the ones that are incorrect or right click a word to add it to your custom dictionary.</p>';
             foreach ($sm->detail as $value) {
                 $out .= '<li><span class="smText">' . $value->string . '</span><strong> Suggestions: </strong>';
                 //if($result->data->analysis->sm->total > 0) {
@@ -191,6 +291,12 @@ class meta {
                 $out .= '</li>' . PHP_EOL;
             }
             $out .= '</ul>';
+            $words = array();
+            foreach ($sm->detail as $value)
+                $words[] = $value->string;
+            $out .= '<script type="text/javascript">
+                         var SMwords = ' . drupal_json_encode($words) . ';
+                         </script>';
         } // end if is array.
         $out .= '</article>' . PHP_EOL;
         $out .= '</div>' . PHP_EOL;
@@ -212,6 +318,7 @@ class meta {
         $out .= $gm->total . ' grammar error(s).</p>' . PHP_EOL;
         if (is_array($gm->detail)) {
             $out .= '<ul class="grammar-mistakes">';
+            $out .= '<p>These grammatical recommendations will improve your post.</p>';
             foreach ($gm->detail as $value) {
                 if (!empty($value->suggestions)) {
                     if (!is_array($value->suggestions)) {
@@ -222,6 +329,18 @@ class meta {
                 }
                 $out .= '<li><span class="gmText">' . $value->string . '</span> - <a href="' . $value->url . '" target="_blank">See Explanation</a></li>' . PHP_EOL;
             }
+
+
+            $words = array();
+            foreach ($gm->detail as $key => $value)
+                $words[] = $value->string;
+            $out .= '<script type="text/javascript">
+                         var GMwords = ' . drupal_json_encode($words) . ';
+                         </script>';
+
+
+
+            $out .= '<p>Refer to our guide on how to write with an active voice <a class="toggle-link ar-message-link" target="_blank" href="http://hub.atomicreach.com/i/304278/"><span>here</span></a>.</p>';
             $out .= '</ul>';
         } // end if is array.
         $out .= '</article>' . PHP_EOL;
@@ -243,6 +362,7 @@ class meta {
         if ($tg->total >= 1) {
             $out .= $tg->total . ' Keyword(s) identified. ' . PHP_EOL;
             $out .= '<ul>';
+            $out .= '<p>These are your post\'s keywords. Use 1-4 terms in your title to optimize it!</p>';
             foreach ($tg->detail AS $tags) {
                 $out .= '<li>' . $tags . '</li>' . PHP_EOL;
             }
@@ -296,6 +416,7 @@ class meta {
                     $num++;
                 }
             }
+            $out .= '<p>Refer to our guide on how to create engaging titles <a class="toggle-link ar-message-link" target="_blank" href="http://hub.atomicreach.com/i/303939/"><span>here</span></a>.</p>';
             $out .= "</ul>";
         }
         $out .= '</article>' . PHP_EOL;
@@ -304,10 +425,10 @@ class meta {
     }
 
     public function displayHighlightsButtons() {
-        if ($this->result->data->analysis->sm->total > 0 || $this->result->data->analysis->gm->total > 0 || $this->result->data->analysis->lc->invalid > 0 || strtolower($this->result->data->analysis->so->state !== 'green')):
+        if ($this->result->data->analysis->sm->total > 0 || $this->result->data->analysis->gm->total > 0 || $this->result->data->analysis->lc->invalid > 0 || strtolower($this->result->data->analysis->so->state !== 'green') || strtolower($this->result->data->analysis->pwd->state !== 'green')):
             $out = '';
             $out .= '<strong>Select a category to highlight areas to refine:</strong>';
-            $out .= '<ul id="hl-class">';
+            $out .= '<ul class="hl-btns">';
             if ($this->result->data->analysis->sm->total > 0):
                 $out .= '<li>';
                 $out .= '<input type="checkbox" id="chksp" name="chk" value="all">
@@ -328,7 +449,7 @@ class meta {
             endif;
             if (strtolower($this->result->data->analysis->so->state !== 'green')):
                 $out .= '<li>   
-<input type="checkbox" id="chkso" name="chk"value="false">
+<input class="' . strtolower(str_replace(" ", "-", $this->result->data->analysis->so->detail)) . '" type="checkbox" id="chkso" name="chk" value="false">
 <label for="chkso">Audience Mismatch</label>
 </li>';
                 $light_blue = '#91c7f9';
@@ -340,6 +461,21 @@ class meta {
                          var paragraphs = ' . drupal_json_encode($this->result->data->analysis->so->paragraphs) . ';
                          </script>';
             endif;
+            // PARAGRAPH DENSITY
+            if (strtolower($this->result->data->analysis->so->state !== 'green')):
+                $out .= '<li>   
+<input type="checkbox" id="chkpwd" name="chk" value="true">
+<label for="chkpwd">Paragraph Density</label>
+</li>';
+                $out .= '
+        <script>
+        var PWDtooShortColor = ' . drupal_json_encode('#F6C9CB') . ';
+        var PWDtooLongColor = ' . drupal_json_encode('#C98BD1') . ';
+        var PWDparagraphs = ' . drupal_json_encode($this->result->data->analysis->pwd->detail->paragraphs) . ';
+        var PWDdomExpression = ' . drupal_json_encode($this->result->data->analysis->pwd->detail->paragraphDOM) . ';
+</script>';
+            endif; // end parag density
+
             $out .= '</ul>   ';
             return $out;
         endif;
@@ -356,17 +492,40 @@ class meta {
         }
 
 
-//    $out  = '<div class="ar-score-wrapper">';
-//    $out .= '</div>';
-        $out = '<div class="ar-score-container"><span>' . $score . '</span></div>';
-        $out .= '<p class="ar-msg">Aim for an Atomic Score of 60+, but with the suggestions below you can gain even greater engagement.</p>';
-        $out .= '<div class="ar-progress">';
-        $out .= '<div class="ar-bar bar-danger" style="width: 50%;"></div>';
-        $out .= '<div class="ar-bar bar-warning" style="width: 30%;"></div>';
-        $out .= '<div class="ar-bar bar-success" style="width: 20%;"></div>';
-        $out .= '<div class="ar-score" style="left:' . $score . '%;"><i class="fa fa-long-arrow-up"></i></div>';
+        $out = '<div class="ar-score-wrapper">';
+        $out .= '<div class="ar-score-container"><span>' . $score . '</span></div>';
+
+
+        if ($this->result->data->analysis->so->detail == 'TOO COMPLEX') {
+            $pieImg = 'AR-TooComplicated.png';
+        } elseif ($this->result->data->analysis->so->detail == 'TOO SIMPLE') {
+            $pieImg = 'AR-TooSimple.png';
+        } elseif ($this->result->data->analysis->so->detail == 'HIT') {
+            if ($this->targetAud == 'GENERAL') {
+                $pieImg = 'AR-Match-General.png';
+            } elseif ($this->targetAud == 'KNOWLEDGEABLE') {
+                $pieImg = 'AR-Match-Knowledgable.png';
+            } elseif ($this->targetAud == 'ACADEMIC') {
+                $pieImg = 'AR-Match-Academic.png';
+            } elseif ($this->targetAud == 'SPECIALIST') {
+                $pieImg = 'AR-Match-Specialist.png';
+            } elseif ($this->targetAud == 'GENIUS') {
+                $pieImg = 'AR-Match-Genius.png';
+            }
+        }
+
+        $out .= '<img src="' . base_path() . drupal_get_path('module', 'atomic_engager') . '/inc/images/' . $pieImg . '" alt="soph pie img" />';
         $out .= '</div>';
-        $out .= '<div class="ar-score-message">' . $msg . '</div>';
+
+
+        $out .= '<p class="ar-msg">Aim for an Atomic Score of 60+, but with the suggestions below you can gain even greater engagement.</p>';
+
+//        $out .= '<div class="ar-progress">';
+        //        $out .= '<div class="ar-bar bar-danger" style="width: 50%;"></div>';
+        //        $out .= '<div class="ar-bar bar-warning" style="width: 30%;"></div>';
+        //        $out .= '<div class="ar-bar bar-success" style="width: 20%;"></div>';
+        //        $out .= '<div class="ar-score" style="left:' . $score . '%;"><i class="fa fa-long-arrow-up"></i></div>';
+        //        $out .= '<div class="ar-score-message">' . $msg . '</div>';
         return $out;
     }
 
@@ -389,5 +548,4 @@ class meta {
     }
 
 }
-
 ?>
