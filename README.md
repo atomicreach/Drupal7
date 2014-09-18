@@ -12,7 +12,9 @@ Get your content scored to see how you can create remarkable content for your ta
 Note
 -----
 
-This module sends data insights to your [Atomic Insights] account and helps you write relevant content targeted to your online audience(s), maximizing your performance for true engagement
+This module sends data insights to your [Atomic Insights] account and helps you write relevant content targeted to your online audience(s), maximizing your performance for true engagement.
+
+This module also create a RSS view(using [View] module) of 300 latest articles with full content. You can disable that using view setting page. Its called "AR FEED".
 
 Version
 ----
@@ -36,3 +38,4 @@ Contact
 
 [Atomic Insights]:http://score.atomicreach.com/
 [Atomic Reach]:http://www.atomicreach.com/
+[View]:https://www.drupal.org/project/views
