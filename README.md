@@ -16,7 +16,7 @@ This module sends data insights to your [Atomic Insights] account and helps you 
 
 Version
 ----
-2.0
+2.0.09
 
 Installation
 --------------

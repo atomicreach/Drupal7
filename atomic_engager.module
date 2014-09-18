@@ -209,6 +209,7 @@ $score = '';
 	    $score .= '</div>';
 
         $score .= '</div>';
+        $score .= '<div class="messages warning" style="width: 600px;"><h2>Click the Save button below to rescore this article.</h2></div>';
 return $score;
 }
 }
@@ -310,4 +311,15 @@ $success = true;
 
 echo $success ? 'OK' : 'ERROR';
 exit();
+}
+
+/**
+ * Implementation of hook_views_api().
+*/
+function atomic_engager_views_api() {
+    if (module_exists('views')) {
+  return array(
+    'api' => 3.0,
+  );  
+    }
 }
