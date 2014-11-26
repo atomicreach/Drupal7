@@ -499,12 +499,15 @@ body {
     transition: all .5s ease;
     cursor: pointer;
 }
+.hl-btns label{
+    padding-bottom: 25px;
+}
 
 .hl-btns input[type=radio]:checked + label:before, .hl-btns input[type=checkbox]:checked + label:before, .checked-label:before {
     content: "\2611" !important;
-    font-size: 20px !important;
+    font-size: 40px !important;
     vertical-align: top;
-    margin: 0 10px;
+    /*margin: 0 10px;*/
 }
 
 #chksp + label:before, label[for=chksp]:before {
@@ -625,11 +628,56 @@ a:hover.ARinfoToolTip span {
     margin-right: 15px;
     z-index: 999;
 }
+/*show tooltip on right*/
+ a.ARinfoToolTip-right {
+     position: relative;
+     /*margin-left: 80%;*/
+     float: right;
+     display: inline;
+     /*float: right;*/
+ }
 
-/*#right-score {
-    background-color: #f9f9f9;
-    padding: 5px 10px 15px;
-}*/
+ a.ARinfoToolTip-right span {
+     position: absolute;
+     width: 400px;
+     color: #FFFFFF;
+     background: #000000;
+     height: auto;
+     line-height: 30px;
+     left: 100%;
+     text-align: center;
+     visibility: hidden;
+     padding: 5px 10px;
+     border-radius: 6px;
+ }
+
+ a.ARinfoToolTip-right span:after {
+     content: '';
+     position: absolute;
+     top: 15px;
+     right: 100%;
+     margin-top: -8px;
+     width: 0;
+     height: 0;
+     border-right: 8px solid #000000;
+     border-top: 8px solid transparent;
+     border-bottom: 8px solid transparent;
+ }
+
+ a:hover.ARinfoToolTip-right span {
+     visibility: visible;
+     opacity: 0.9;
+     right: 100%;
+     top: 50%;
+     margin-top: -15px;
+     margin-right: 15px;
+     z-index: 999;
+ }
+
+ /*#right-score {
+     background-color: #f9f9f9;
+     padding: 5px 10px 15px;
+ }*/
 
 .AR-tabBlock {
     /*background-color: #fff;*/

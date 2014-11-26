@@ -1,325 +1,349 @@
 <?php
 
-function atomic_engager_menu() {
+	function atomic_engager_menu()
+	{
 
-    $items = array();
-    $items['admin/config/content/atomicengager'] = array(
-        'title' => 'Atomic Engager configuration',
-        'description' => 'Set the API keys to make this module work.',
-        'page callback' => 'drupal_get_form',
-        'page arguments' => array('atomic_engager_form'),
-        'access arguments' => array('access administration pages'),
-        'type' => MENU_NORMAL_ITEM,
-    );
-    $items['atomicengager/dictionary'] = array(
-        'title' => t('Atomic Engager Dictionary'),
-        'type' => MENU_CALLBACK,
-        //our custom ajax callback
-        'page callback' => 'atomic_engager_custom_dictionary',
-        //access to user can access content in a site, you can define your own permission using hook_perm()
-        'access arguments' => array('access content'),
-    );
-    return $items;
-}
+		$items                                       = array();
+		$items['admin/config/content/atomicengager'] = array(
+			'title'            => 'Atomic Engager configuration',
+			'description'      => 'Set the API keys to make this module work.',
+			'page callback'    => 'drupal_get_form',
+			'page arguments'   => array('atomic_engager_form'),
+			'access arguments' => array('access administration pages'),
+			'type'             => MENU_NORMAL_ITEM,
+		);
+		$items['atomicengager/dictionary']           = array(
+			'title'            => t('Atomic Engager Dictionary'),
+			'type'             => MENU_CALLBACK,
+			//our custom ajax callback
+			'page callback'    => 'atomic_engager_custom_dictionary',
+			//access to user can access content in a site, you can define your own permission using hook_perm()
+			'access arguments' => array('access content'),
+		);
 
-/**
- * Page callback: Current posts settings
- *
- * @see current_posts_menu()
- */
-function atomic_engager_form($form, &$form_state) {
-    $form['atomicengager_consumer'] = array(
-        '#type' => 'textfield',
-        '#title' => t('Consumer Keys'),
-        '#default_value' => variable_get('atomicengager_consumer', ''),
-        '#size' => 20,
-        '#maxlength' => 90,
-        '#description' => t('Please enter consumer keys from <a href="http://score.atomicreach.com" target="_blank">here</a>.'),
-        '#required' => TRUE,
-    );
-    $form['atomicengager_secret'] = array(
-        '#type' => 'textfield',
-        '#title' => t('Secret Keys'),
-        '#default_value' => variable_get('atomicengager_secret', ''),
-        '#size' => 20,
-        '#maxlength' => 90,
-        '#description' => t('Please enter secret keys from <a href="http://score.atomicreach.com" target="_blank">here</a>.'),
-        '#required' => TRUE,
-    );
-    return system_settings_form($form);
-}
+		return $items;
+	}
 
-function atomic_engager_form_alter(&$form, &$form_state, $form_id) {
+	/**
+	 * Page callback: Current posts settings
+	 *
+	 * @see current_posts_menu()
+	 */
+	function atomic_engager_form($form, &$form_state)
+	{
+		$form['atomicengager_consumer'] = array(
+			'#type'          => 'textfield',
+			'#title'         => t('Consumer Keys'),
+			'#default_value' => variable_get('atomicengager_consumer', ''),
+			'#size'          => 20,
+			'#maxlength'     => 90,
+			'#description'   => t('Please enter consumer keys from <a href="http://score.atomicreach.com" target="_blank">here</a>.'),
+			'#required'      => TRUE,
+		);
+		$form['atomicengager_secret']   = array(
+			'#type'          => 'textfield',
+			'#title'         => t('Secret Keys'),
+			'#default_value' => variable_get('atomicengager_secret', ''),
+			'#size'          => 20,
+			'#maxlength'     => 90,
+			'#description'   => t('Please enter secret keys from <a href="http://score.atomicreach.com" target="_blank">here</a>.'),
+			'#required'      => TRUE,
+		);
+
+		return system_settings_form($form);
+	}
+
+	function atomic_engager_form_alter(&$form, &$form_state, $form_id)
+	{
 // only show if viewing any Node form.
-    if (isset($form['#node_edit_form'])) {
-        if ($form['#node_edit_form'] == 1) {
-       
-            $form['arPost'] = array(
-                '#type' => 'fieldset',
-                '#title' => t('Atomic Engager'),
-                '#description' => t('Click the Analyze button below to analyze your content. Make sure you select your target audience.'),
-                '#weight' => -5,
-                '#collapsible' => TRUE,
-                '#collapsed' => FALSE,
-                '#prefix' => '<div id="atomicreach">',
-                '#suffix' => '</div>',
-            );
-            $AR = atomic_engager_api_init();
-            $options = atomic_engager_get_audienceList($AR);
-            
-            $form['arPost']['araudience'] = array(
-                '#type' => 'select',
-                '#title' => t('Target Audience Segment '),
-                '#default_value' => '',
-                '#weight' => 20,
-                '#options' => $options
-            );
+		if (isset($form['#node_edit_form'])) {
+			if ($form['#node_edit_form'] == 1) {
 
-            // AJAX Stuff
-            $form['arPost']['aranalyze'] = array(
-                '#type' => 'button',
-                //      '#src' => drupal_get_path('module', 'atomic_engager') . '/inc/images/analyze-button.png',
-                '#value' => t("Analyze"),
-                //  '#description' => t("Click to score this content."),
-                '#prefix' => '<div id="ax">',
-                '#suffix' => '</div>',
-                '#weight' => 30,
-                '#ajax' => array(
-                    'callback' => 'atomic_engager_get_score',
-                    'wrapper' => 'ax',
-                    //'method' => 'after',
-                    'effect' => 'fade',
-                ),
-            );
-            atomic_engager_add_js();
+				$form['arPost'] = array(
+					'#type'        => 'fieldset',
+					'#title'       => t('Atomic Engager'),
+					'#description' => t('Click the Analyze button below to analyze your content. Make sure you select your target audience.'),
+					'#weight'      => -5,
+					'#collapsible' => TRUE,
+					'#collapsed'   => FALSE,
+					'#prefix'      => '<div id="atomicreach">',
+					'#suffix'      => '</div>',
+				);
+				$AR             = atomic_engager_api_init();
+				$options        = atomic_engager_get_audienceList($AR);
 
-        }
-    }
-}
+				$form['arPost']['araudience'] = array(
+					'#type'          => 'select',
+					'#title'         => t('Target Audience Segment '),
+					'#default_value' => '',
+					'#weight'        => 20,
+					'#field_suffix'  => t('<a style="float: none;" class="ARinfoToolTip-right" href=""><i style="vertical-align: bottom;" class="fa
+					fa-info-circle"></i>
+					<span><img src="' . base_path() . drupal_get_path('module', 'atomic_engager') . '/inc/images/AR-KnowledgeWheel-Words.png"
+					alt="soph
+					pie img" /></span>
+				</a>'),
+					'#options'       => $options
+				);
 
-function atomic_engager_api_init() {
-    $apiHost = 'http://api.score.atomicreach.com';
+				// AJAX Stuff
+				$form['arPost']['aranalyze'] = array(
+					'#type'   => 'button',
+					//      '#src' => drupal_get_path('module', 'atomic_engager') . '/inc/images/analyze-button.png',
+					'#value'  => t("Analyze"),
+					//  '#description' => t("Click to score this content."),
+					'#prefix' => '<div id="ax">',
+					'#suffix' => '</div>',
+					'#weight' => 30,
+					'#ajax'   => array(
+						'callback' => 'atomic_engager_get_score',
+						'wrapper'  => 'ax',
+						//'method' => 'after',
+						'effect'   => 'fade',
+					),
+				);
+				atomic_engager_add_js();
+
+			}
+		}
+	}
+
+	function atomic_engager_api_init()
+	{
+		$apiHost = 'http://api.score.atomicreach.com';
 //$apiHost = 'https://api.dev.arv3.atomicreach.com';
-    $key = variable_get('atomicengager_consumer', '');
-    $secret = variable_get('atomicengager_secret', '');
+		$key    = variable_get('atomicengager_consumer', '');
+		$secret = variable_get('atomicengager_secret', '');
 // check if API keys are valid and exists.
-    if (isset($key) && isset($secret)) {
-        if (!class_exists('AR_Client')) {
-            module_load_include('inc', 'atomic_engager', 'inc/ARClient'); // adding AR_Client class
-        }
-        $AR = new AR_Client($apiHost, $key, $secret); // New object
-        $AR->init();
-        return $AR;
-    }// if keys are set
-}
+		if (isset($key) && isset($secret)) {
+			if (!class_exists('AR_Client')) {
+				module_load_include('inc', 'atomic_engager', 'inc/ARClient'); // adding AR_Client class
+			}
+			$AR = new AR_Client($apiHost, $key, $secret); // New object
+			$AR->init();
 
-function atomic_engager_get_audienceList($AR) {
-    //$audienceList = $AR->getAudienceList();
-    $audienceList = $AR->getSophisticationBandList();
-    foreach ($audienceList->sophisticatonBands as $sb) {
-        $options[$sb->id . strtoupper($sb->name)] = $sb->name;
-    }
+			return $AR;
+		}
+		// if keys are set
+	}
 
-return $options;
-}
+	function atomic_engager_get_audienceList($AR)
+	{
+		//$audienceList = $AR->getAudienceList();
+		$audienceList = $AR->getSophisticationBandList();
+		foreach ($audienceList->sophisticatonBands as $sb) {
+			$options[$sb->id . strtoupper($sb->name)] = $sb->name;
+		}
 
-function atomic_engager_get_score($form, $form_state) {
-$commands = array();
+		return $options;
+	}
 
-$audience = $form_state['values']['araudience'];
+	function atomic_engager_get_score($form, $form_state)
+	{
+		$commands = array();
 
-$segmentId = filter_var($audience, FILTER_SANITIZE_NUMBER_INT);
+		$audience = $form_state['values']['araudience'];
+
+		$segmentId = filter_var($audience, FILTER_SANITIZE_NUMBER_INT);
 //$targetAud = str_replace(range(0,9).'* ','',$audience), '', $audience);
-$targetAud = preg_replace('/[^A-Z]/', '', $audience);
+		$targetAud = preg_replace('/[^A-Z]/', '', $audience);
 
-$title = $form['title']['#default_value'];
-$content = $form['#node']->body['und']['0']['value'];
-if (empty($title) || empty($content)) {
+		$title   = $form['title']['#default_value'];
+		$content = $form['#node']->body['und']['0']['value'];
+		if (empty($title) || empty($content)) {
 
-return "<div class='messages error'><h2>Content not found! Please try again.</h2></div>";
-} else {
-$AR = atomic_engager_api_init();
-return atomic_engager_display_Score($AR, $content, $title, $segmentId, $targetAud);
-}
-}
+			return "<div class='messages error'><h2>Content not found! Please try again.</h2></div>";
+		} else {
+			$AR = atomic_engager_api_init();
 
-function atomic_engager_display_Score($AR, $content, $title, $segmentId = 0, $targetAud) {
-$result = $AR->analyzePost($content, $title, $segmentId);
+			return atomic_engager_display_Score($AR, $content, $title, $segmentId, $targetAud);
+		}
+	}
+
+	function atomic_engager_display_Score($AR, $content, $title, $segmentId = 0, $targetAud)
+	{
+		$result = $AR->analyzePost($content, $title, $segmentId);
 
 // check API status Code
-if ($result->status != 10 && $result->status != 21) {
-$error_message = "<h2 style='color: #ff0000;'>Error!! Something went wrong! Please <a href='http://www.atomicreach.com/contact-us/'>contact us</a> with following [Status Code]:{$result->status}</h2>";
-return $error_message;
-} elseif ($result->status == 21) {
-return "<h2 style='color: #ff0000;'>AtomicReach Authentication failed! please make sure you have valid keys. For assistance please <a href='http://www.atomicreach.com/contact-us/'>contact us</a></h2>";
-} else {
-module_load_include('inc', 'atomic_engager', 'inc/meta'); // adding meta class
-drupal_add_library('atomic_engager', 'atomic_engager_meta');
-$Output = new meta($result, $targetAud);
-$score = '';
-        // Display Score card.
-        $score .= '<div class="score-card">';
-        $score .= $Output->displayScore();
-	    $score .= '<a class="ARinfoToolTip" href=""><i style="vertical-align: bottom;" class="fa fa-info-circle"></i>
+		if ($result->status != 10 && $result->status != 21) {
+			$error_message = "<h2 style='color: #ff0000;'>Error!! Something went wrong! Please <a href='http://www.atomicreach.com/contact-us/'>contact us</a> with following [Status Code]:{$result->status}</h2>";
+
+			return $error_message;
+		} elseif ($result->status == 21) {
+			return "<h2 style='color: #ff0000;'>AtomicReach Authentication failed! please make sure you have valid keys. For assistance please <a href='http://www.atomicreach.com/contact-us/'>contact us</a></h2>";
+		} else {
+			module_load_include('inc', 'atomic_engager', 'inc/meta'); // adding meta class
+			drupal_add_library('atomic_engager', 'atomic_engager_meta');
+			$Output = new meta($result, $targetAud);
+			$score  = '';
+			// Display Score card.
+			$score .= '<div class="score-card">';
+			$score .= $Output->displayScore();
+			$score .= '<a class="ARinfoToolTip" href=""><i style="vertical-align: bottom;" class="fa fa-info-circle"></i>
 					<span>The analysis of your content is grouped into 4 buckets: title, audience, structure and linguistics. Click on each bar to reveal insights about your content. As you make changes, hit score and re-evaluate your content.</span>
 				</a>';
-	    $score .= '</div>';
-	    $score .= '<ul class="AR-tabs">
+			$score .= '</div>';
+			$score .= '<ul class="AR-tabs">
 					<li><a class="AR-tabsButton" id="AR-tabsSummary" href="#arTabSummary">Summary</a></li>
 					<li><a class="AR-tabsButton" href="#arTabTitle">Title</a></li>
 					<li><a class="AR-tabsButton" href="#arTab1Audience">Audience</a></li>
 					<li><a class="AR-tabsButton" href="#arTabStructure">Structure</a></li>
 					<li><a class="AR-tabsButton" href="#arTabLinguistics">Linguistics</a></li>
 				</ul>';
-		$score .= '<div id="arTabContent">';
-		$score .= '<div id="arTabSummary" class="AR-tabBlock">';
-	    $score .= $Output->summaryTab();
-	    $score .= $Output->displayHighlightsButtons();
-	    $score .= '</div>';
+			$score .= '<div id="arTabContent">';
+			$score .= '<div id="arTabSummary" class="AR-tabBlock">';
+			$score .= $Output->summaryTab();
+			$score .= $Output->displayHighlightsButtons();
+			$score .= '</div>';
 
-		$score .= '<div id="arTabTitle" class="AR-tabBlock">';
-	    $score .= '<div class="ac-container">';
-	    $score .= $Output->titleOptimization();
-	    $score .= '</div></div>';
+			$score .= '<div id="arTabTitle" class="AR-tabBlock">';
+			$score .= '<div class="ac-container">';
+			$score .= $Output->titleOptimization();
+			$score .= '</div></div>';
 
-	    $score .= '<div id="arTab1Audience" class="AR-tabBlock">';
-           // $score .= '<ul class="hl-btns"><li><label for="chkso">Audience Mismatch</label></li></ul>' . PHP_EOL;
-	    $score .= '<div class="ac-container">';
-	    $score .= $Output->contentSophistication();
-	    $score .= '</div></div>';
+			$score .= '<div id="arTab1Audience" class="AR-tabBlock">';
+			// $score .= '<ul class="hl-btns"><li><label for="chkso">Audience Mismatch</label></li></ul>' . PHP_EOL;
+			$score .= '<div class="ac-container">';
+			$score .= $Output->contentSophistication();
+			$score .= '</div></div>';
 
 
-	    $score .= '<div id="arTabStructure" class="AR-tabBlock">';
-            //$score .= '<ul class="hl-btns"><li><label for="chkpwd">Paragraph Density</label></li></ul>' . PHP_EOL;
-	    $score .= '<div class="ac-container">';
-            $score .= $Output->paragraphDensity();
-	    $score .= $Output->topicsTags();
-	    $score .= $Output->contentLength();
-	    $score .= $Output->linkCount();
-	    $score .= '</div></div>';
+			$score .= '<div id="arTabStructure" class="AR-tabBlock">';
+			//$score .= '<ul class="hl-btns"><li><label for="chkpwd">Paragraph Density</label></li></ul>' . PHP_EOL;
+			$score .= '<div class="ac-container">';
+			$score .= $Output->paragraphDensity();
+			$score .= $Output->topicsTags();
+			$score .= $Output->contentLength();
+			$score .= $Output->linkCount();
+			$score .= '</div></div>';
 
-	    $score .= '<div id="arTabLinguistics" class="AR-tabBlock">';
-          ///  $score .= '<ul class="hl-btns"><li><label for="chksp">Spelling Mistake</label></li><li><label for="chkgm">Grammar Insights</label></li></ul>' . PHP_EOL;
-	    $score .= '<div class="ac-container">';
-	    $score .= $Output->contentEmotion();
-            $score .= $Output->spellingMistakes();
-	    $score .= $Output->grammarMistakes();
+			$score .= '<div id="arTabLinguistics" class="AR-tabBlock">';
+			///  $score .= '<ul class="hl-btns"><li><label for="chksp">Spelling Mistake</label></li><li><label for="chkgm">Grammar Insights</label></li></ul>' . PHP_EOL;
+			$score .= '<div class="ac-container">';
+			$score .= $Output->contentEmotion();
+			$score .= $Output->spellingMistakes();
+			$score .= $Output->grammarMistakes();
 //	    $score .= $Output->contentClarity();
-	    $score .= '</div></div>';
-	    $score .= '</div>';
+			$score .= '</div></div>';
+			$score .= '</div>';
 
-        $score .= '</div>';
-        $score .= '<div class="messages warning" style="width: 600px;"><h2>Click the Save button below to rescore this article.</h2></div>';
-return $score;
-}
-}
+			$score .= '</div>';
+			$score .= '<div class="messages warning" style="width: 600px;"><h2>Click the Save button below to rescore this article.</h2></div>';
+
+			return $score;
+		}
+	}
 
 
-function atomic_engager_add_js() {
-if (module_exists('wysiwyg')) {
-drupal_add_js(drupal_get_path('module', 'atomic_engager') . '/inc/js/wysiwyg-atomicreach.js');
-drupal_add_js(array('atomic_engager' => array('key' => 'value')), 'setting');
-} else {
-drupal_add_js(drupal_get_path('module', 'atomic_engager') . '/inc/js/atomicreach.js');
-}
-drupal_add_css(drupal_get_path('module', 'atomic_engager') . '/inc/css/atomicreach.css');
-drupal_add_js(drupal_get_path('module', 'atomic_engager') . '/inc/js/ar-highlight.js');
-}
+	function atomic_engager_add_js()
+	{
+		if (module_exists('wysiwyg')) {
+			drupal_add_js(drupal_get_path('module', 'atomic_engager') . '/inc/js/wysiwyg-atomicreach.js');
+			drupal_add_js(array('atomic_engager' => array('key' => 'value')), 'setting');
+		} else {
+			drupal_add_js(drupal_get_path('module', 'atomic_engager') . '/inc/js/atomicreach.js');
+		}
+		drupal_add_css(drupal_get_path('module', 'atomic_engager') . '/inc/css/atomicreach.css');
+		drupal_add_js(drupal_get_path('module', 'atomic_engager') . '/inc/js/ar-highlight.js');
+	}
 
-/**
-* Implementation of hook_wywiwyg_plugin().
-*/
-function atomic_engager_wysiwyg_plugin($editor, $version = 0) {
-switch ($editor) {
-case 'tinymce':
-if (version_compare($version, 3, '>=') && version_compare($version, 4, '<')) {
-return array(
-'customDictionaryContextMenu' => array(
+	/**
+	 * Implementation of hook_wywiwyg_plugin().
+	 */
+	function atomic_engager_wysiwyg_plugin($editor, $version = 0)
+	{
+		switch ($editor) {
+			case 'tinymce':
+				if (version_compare($version, 3, '>=') && version_compare($version, 4, '<')) {
+					return array(
+						'customDictionaryContextMenu' => array(
 // A URL to the plugin's homepage, optional.
-'url' => 'http://www.atomicreach.com/',
+							'url'        => 'http://www.atomicreach.com/',
 // The full path to the native editor plugin, no trailing slash.
 // Ignored when 'internal' is set to TRUE below.
 //'path' => wysiwyg_get_path('tinymce_plugins', TRUE) . '/myplugin',
-'path' => drupal_get_path('module', 'atomic_engager') . '/inc/customDictionaryContextMenu/editor_plugin.js',
+							'path'       => drupal_get_path('module', 'atomic_engager') . '/inc/customDictionaryContextMenu/editor_plugin.js',
 // A list of editor extensions provided by this native plugin.
 // Extensions are not displayed as buttons and touch the editor's
 // internals, so you should know what you are doing.
-'extensions' => array(
-'internal_name_of_myplugin' => t('Atomic Engager Custom Dictionary'),
-),
+							'extensions' => array(
+								'internal_name_of_myplugin' => t('Atomic Engager Custom Dictionary'),
+							),
 // Boolean whether the editor needs to load this plugin. When TRUE,
 // the editor will automatically load the plugin based on the 'path'
 // variable provided. If FALSE, the plugin either does not need to
 // be loaded or is already loaded by something else on the page.
 // Most plugins should define TRUE here.
-'load' => TRUE,
+							'load'       => TRUE,
 // Boolean whether this plugin is a native plugin, i.e. shipped with
 // the editor. Definition must be ommitted for plugins provided by
 // other modules. TRUE means 'path' and 'filename' above are ignored
 // and the plugin is instead loaded from the editor's plugin folder.
-'internal' => FALSE,
-),
-);
-}
-break;
+							'internal'   => FALSE,
+						),
+					);
+				}
+				break;
 // Below is add to custom dictionary plugi for ckeditor v3.
-case 'ckeditor':
-if (version_compare($version, 3, '>=') && version_compare($version, 4, '<')) {
-return array(
-'atomicengager' => array(
-'path' => drupal_get_path('module', 'atomic_engager') . '/inc/ckeditor3/plugin/atomicengager',
-'buttons' => array(
-'atomicengager_button' => t('Atomic Engager'),
-),
-'load' => TRUE,
-),
-);
-}
-break;
-}
-}
+			case 'ckeditor':
+				if (version_compare($version, 3, '>=') && version_compare($version, 4, '<')) {
+					return array(
+						'atomicengager' => array(
+							'path'    => drupal_get_path('module', 'atomic_engager') . '/inc/ckeditor3/plugin/atomicengager',
+							'buttons' => array(
+								'atomicengager_button' => t('Atomic Engager'),
+							),
+							'load'    => TRUE,
+						),
+					);
+				}
+				break;
+		}
+	}
 
-define('IS_AJAX_REQUEST', isset($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest');
-if (IS_AJAX_REQUEST) {
-if ($_GET['word']) {
-atomic_engager_custom_dictionary();
-}
-}
+	define('IS_AJAX_REQUEST', isset($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest');
+	if (IS_AJAX_REQUEST) {
+		if ($_GET['word']) {
+			atomic_engager_custom_dictionary();
+		}
+	}
 
-function atomic_engager_custom_dictionary() {
-$success = false;
+	function atomic_engager_custom_dictionary()
+	{
+		$success = FALSE;
 // check if it is via GET or POST..
-if (isset($_GET['word'])) {
-$word = $_GET['word'];
-} elseif (isset($_POST['word'])) {
-$word = $_POST['word'];
-}
+		if (isset($_GET['word'])) {
+			$word = $_GET['word'];
+		} elseif (isset($_POST['word'])) {
+			$word = $_POST['word'];
+		}
 
-if ($word) {
-module_load_include('inc', 'atomic_engager', 'inc/ARClient');
-$apiHost = 'http://api.score.atomicreach.com';
-$key = variable_get('atomicengager_consumer', '');
-$secret = variable_get('atomicengager_secret', '');
-$apiClient = New AR_Client($apiHost, $key, $secret);
-$apiClient->init();
-$result = $apiClient->addDictionary($word);
+		if ($word) {
+			module_load_include('inc', 'atomic_engager', 'inc/ARClient');
+			$apiHost   = 'http://api.score.atomicreach.com';
+			$key       = variable_get('atomicengager_consumer', '');
+			$secret    = variable_get('atomicengager_secret', '');
+			$apiClient = New AR_Client($apiHost, $key, $secret);
+			$apiClient->init();
+			$result = $apiClient->addDictionary($word);
 
-if ($result->status == AR_Client::STATUS_OK) {
-$success = true;
-}
-}
+			if ($result->status == AR_Client::STATUS_OK) {
+				$success = TRUE;
+			}
+		}
 
-echo $success ? 'OK' : 'ERROR';
-exit();
-}
+		echo $success ? 'OK' : 'ERROR';
+		exit();
+	}
 
-/**
- * Implementation of hook_views_api().
-*/
-function atomic_engager_views_api() {
-    if (module_exists('views')) {
-  return array(
-    'api' => 3.0,
-  );  
-    }
-}
+	/**
+	 * Implementation of hook_views_api().
+	 */
+	function atomic_engager_views_api()
+	{
+		if (module_exists('views')) {
+			return array(
+				'api' => 3.0,
+			);
+		}
+	}

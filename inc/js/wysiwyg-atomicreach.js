@@ -55,7 +55,13 @@
                 //var regexSm = new RegExp('(?:\\b|_)(' + aSm + ')(?:\\b|_)', 'ig');
                  var words = $.map(SMwords, function(word, i) { return word.replace(/[\-\[\]\/\{\}\(\)\*\+\?\.\\\^\$\|]/g, "\\$&"); });
           //var regexSm = new RegExp('(\\b[\\W]*'+words.join("[\\W]*\\b|\\b[\\W]*")+'[\\W]*\\b)','ig');
-          var regexSm = new RegExp('(\\b'+words.join("?[\\x27]?[\\S]+\\b|\\b")+'?[\\x27]?[\\S]+\\b)','ig');
+    //          var regexSm = new RegExp('(\\b'+words.join("?[\\x27]?[\\S]+\\b|\\b")+'?[\\x27]?[\\S]+\\b)','ig');
+                var regexSm = new RegExp('(\\b' + words.join("([\\x27][\\S]*)?\\b|\\b") + '([\\x27][\\S]*)?\\b)', 'ig');
+
+
+
+
+//
 //          console.log("smword: "+SMwords);
 //          console.log("regexSM: "+regexSm);
 
@@ -64,7 +70,7 @@
                 $("#highlight-sp").toggle(function() {
                     $('.form-textarea-wrapper iframe').contents().highlightRegex(regexSm, {
                         tagType: 'span',
-                        className: 'highlight-sp',
+                        className: 'highlight-sp'
                     });
 
                     $('.form-textarea-wrapper iframe').contents().find(".highlight-sp").css("border-bottom", "3px solid #fc0909"); // red
@@ -79,7 +85,7 @@
                     if ($(this).is(":checked")) {
                         $('.form-textarea-wrapper iframe').contents().highlightRegex(regexSm, {
                             tagType: 'span',
-                            className: 'highlight-sp',
+                            className: 'highlight-sp'
                         });
 
                         $('.form-textarea-wrapper iframe').contents().find(".highlight-sp").css("border-bottom", "3px solid #fc0909"); // red
@@ -116,7 +122,9 @@
 //                aGm = $("ul.grammar-mistakes li").find('span.gmText').clone().not(":last").append("|").end().text();
 //                var regexGm = new RegExp(aGm, 'g');
             var words = $.map(GMwords, function(word, i) { return word.replace(/[\-\[\]\/\{\}\(\)\*\+\?\.\\\^\$\|]/g, "\\$&"); });          
-            var regexGm = new RegExp('(\\b'+words.join("?[\\x27]?[\\S]+\\b|\\b")+'?[\\x27]?[\\S]+\\b)','g');
+//            var regexGm = new RegExp('(\\b'+words.join("?[\\x27]?[\\S]+\\b|\\b")+'?[\\x27]?[\\S]+\\b)','g');
+                var regexGm = new RegExp('(\\b' + words.join("([\\x27][\\S]*)?\\b|\\b") + '([\\x27][\\S]*)?\\b)', 'g');
+
                 $("#highlight-gm").toggle(function() {
                     $('.form-textarea-wrapper iframe').contents().highlightRegex(regexGm, {
                         tagType: 'span',
