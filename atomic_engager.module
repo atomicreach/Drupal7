@@ -111,7 +111,6 @@
 	function atomic_engager_api_init()
 	{
 		$apiHost = 'http://api.score.atomicreach.com';
-//$apiHost = 'https://api.dev.arv3.atomicreach.com';
 		$key    = variable_get('atomicengager_consumer', '');
 		$secret = variable_get('atomicengager_secret', '');
 // check if API keys are valid and exists.
@@ -129,7 +128,6 @@
 
 	function atomic_engager_get_audienceList($AR)
 	{
-		//$audienceList = $AR->getAudienceList();
 		$audienceList = $AR->getSophisticationBandList();
 		foreach ($audienceList->sophisticatonBands as $sb) {
 			$options[$sb->id . strtoupper($sb->name)] = $sb->name;
@@ -145,7 +143,6 @@
 		$audience = $form_state['values']['araudience'];
 
 		$segmentId = filter_var($audience, FILTER_SANITIZE_NUMBER_INT);
-//$targetAud = str_replace(range(0,9).'* ','',$audience), '', $audience);
 		$targetAud = preg_replace('/[^A-Z]/', '', $audience);
 
 		$title   = $form['title']['#default_value'];
@@ -202,14 +199,12 @@
 			$score .= '</div></div>';
 
 			$score .= '<div id="arTab1Audience" class="AR-tabBlock">';
-			// $score .= '<ul class="hl-btns"><li><label for="chkso">Audience Mismatch</label></li></ul>' . PHP_EOL;
 			$score .= '<div class="ac-container">';
 			$score .= $Output->contentSophistication();
 			$score .= '</div></div>';
 
 
 			$score .= '<div id="arTabStructure" class="AR-tabBlock">';
-			//$score .= '<ul class="hl-btns"><li><label for="chkpwd">Paragraph Density</label></li></ul>' . PHP_EOL;
 			$score .= '<div class="ac-container">';
 			$score .= $Output->paragraphDensity();
 			$score .= $Output->topicsTags();
@@ -218,12 +213,10 @@
 			$score .= '</div></div>';
 
 			$score .= '<div id="arTabLinguistics" class="AR-tabBlock">';
-			///  $score .= '<ul class="hl-btns"><li><label for="chksp">Spelling Mistake</label></li><li><label for="chkgm">Grammar Insights</label></li></ul>' . PHP_EOL;
 			$score .= '<div class="ac-container">';
 			$score .= $Output->contentEmotion();
 			$score .= $Output->spellingMistakes();
 			$score .= $Output->grammarMistakes();
-//	    $score .= $Output->contentClarity();
 			$score .= '</div></div>';
 			$score .= '</div>';
 
@@ -252,17 +245,24 @@
 	 */
 	function atomic_engager_wysiwyg_plugin($editor, $version = 0)
 	{
+		print_r($editor);
+		echo $version;
 		switch ($editor) {
 			case 'tinymce':
 				if (version_compare($version, 3, '>=') && version_compare($version, 4, '<')) {
+					echo "good";
+
 					return array(
 						'customDictionaryContextMenu' => array(
 // A URL to the plugin's homepage, optional.
 							'url'        => 'http://www.atomicreach.com/',
-// The full path to the native editor plugin, no trailing slash.
-// Ignored when 'internal' is set to TRUE below.
-//'path' => wysiwyg_get_path('tinymce_plugins', TRUE) . '/myplugin',
-							'path'       => drupal_get_path('module', 'atomic_engager') . '/inc/customDictionaryContextMenu/editor_plugin.js',
+							// The full path to the native editor plugin, no trailing slash.
+							// Ignored when 'internal' is set to TRUE below.
+							'path'       => drupal_get_path('module', 'atomic_engager') . '/inc/customDictionaryContextMenu',
+							// The name of the plugin's main JavaScript file.
+							// Ignored when 'internal' is set to TRUE below.
+							// Default value depends on which editor the plugin is for.
+							'filename'   => 'editor_plugin.js',
 // A list of editor extensions provided by this native plugin.
 // Extensions are not displayed as buttons and touch the editor's
 // internals, so you should know what you are doing.
