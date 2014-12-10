@@ -245,12 +245,9 @@
 	 */
 	function atomic_engager_wysiwyg_plugin($editor, $version = 0)
 	{
-		print_r($editor);
-		echo $version;
 		switch ($editor) {
 			case 'tinymce':
 				if (version_compare($version, 3, '>=') && version_compare($version, 4, '<')) {
-					echo "good";
 
 					return array(
 						'customDictionaryContextMenu' => array(
